@@ -514,3 +514,23 @@ export const FlowLanguage: Language = {
   quickTestRendererOptions: [],
   sourceFiles: ["src/language/Flow.ts"]
 };
+
+export const KotlinLanguage: Language = {
+  name: "kotlin",
+  base: "test/fixtures/kotlin",
+  compileCommand: "kotlinc main.kt TopLevel.kt -include-runtime -cp klaxon-3.0.1.jar -d main.jar",
+  runCommand(sample: string) {
+    return `cp "${sample}" sample.json && kotlin -cp klaxon-3.0.1.jar:main.jar quicktype.MainKt`;
+  },
+  diffViaSchema: true,
+  skipDiffViaSchema: [],
+  allowMissingNull: true,
+  output: "TopLevel.kt",
+  topLevel: "TopLevel",
+  skipJSON: [],
+  skipSchema: [],
+  skipMiscJSON: false,
+  rendererOptions: {},
+  quickTestRendererOptions: [],
+  sourceFiles: ["src/Language/Kotlin.ts"]
+};
