@@ -41,6 +41,9 @@ RUN cd libsysconfcpus && ./configure && make && make install
 RUN apt-get install ruby --assume-yes
 RUN gem install bundler
 
+# Kotlin
+RUN apt-get install kotlin --assume-yes
+
 ENV PATH="${workdir}/node_modules/.bin:${PATH}"
 
 COPY . .
