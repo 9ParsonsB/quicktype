@@ -351,7 +351,8 @@ class KotlinRenderer extends ConvenienceRenderer {
             let count = c.getProperties().count();
             let first = true;
             this.forEachClassProperty(c, "none", (name, jsonName, p) => {
-                const nullable = p.isOptional || p.type.kind === "null";
+                const nullable = p.type.kind === "union" && nullableFromUnion(p.type as UnionType) !== null;
+                const nullableOrOptional = p.isOptional || p.type.kind === "null" || nullable;
                 const last = --count === 0;
                 let meta: Array<() => void> = [];
 
@@ -386,7 +387,7 @@ class KotlinRenderer extends ConvenienceRenderer {
                     name,
                     ": ",
                     kotlinType(p),
-                    nullable ? " = null" : "",
+                    nullableOrOptional ? " = null" : "",
                     last ? "" : ","
                 );
 
@@ -417,7 +418,7 @@ class KotlinRenderer extends ConvenienceRenderer {
             this.emitBlock(["override fun toJson(value: Any): String = when (value)"], () => {
                 let table: Sourcelike[][] = [];
                 this.forEachEnumCase(e, "none", (name, jsonName) => {
-                    table.push([[enumName, ".", name], [" -> ", `"${stringEscape(jsonName)}"`]]);
+                    table.push([[enumName, ".", name], [" -> ", `"\\"${stringEscape(jsonName)}\\""`]]);
                 });
                 table.push(["else", ' -> throw IllegalArgumentException("Illegal ', enumName, '")']);
                 this.emitTable(table);
