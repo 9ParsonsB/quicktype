@@ -42,7 +42,7 @@ RUN apt-get install ruby --assume-yes
 RUN gem install bundler
 
 # Kotlin
-RUN apt-get install kotlin --assume-yes
+RUN snap install --classic kotlin
 
 ENV PATH="${workdir}/node_modules/.bin:${PATH}"
 
