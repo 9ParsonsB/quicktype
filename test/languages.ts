@@ -518,9 +518,9 @@ export const FlowLanguage: Language = {
 export const KotlinLanguage: Language = {
   name: "kotlin",
   base: "test/fixtures/kotlin",
-  compileCommand: "kotlinc main.kt TopLevel.kt -include-runtime -cp klaxon-3.0.1.jar -d main.jar",
+  compileCommand: "./build.sh",
   runCommand(sample: string) {
-    return `cp "${sample}" sample.json && kotlin -cp klaxon-3.0.1.jar:main.jar quicktype.MainKt`;
+    return `cp "${sample}" sample.json && ./run.sh`;
   },
   diffViaSchema: true,
   skipDiffViaSchema: [],
