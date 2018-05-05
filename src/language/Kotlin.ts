@@ -328,7 +328,9 @@ class KotlinRenderer extends ConvenienceRenderer {
                 this.ensureBlankLine();
                 this.emitBlock("companion object", () => {
                     this.emitLine(
-                        "public fun fromJson(json: String) = TopLevel(klaxon.parseArray<",
+                        "public fun fromJson(json: String) = ",
+                        name,
+                        "(klaxon.parseArray<",
                         elementType,
                         ">(json)!!)"
                     );
