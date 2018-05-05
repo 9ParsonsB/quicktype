@@ -414,7 +414,9 @@ class KotlinRenderer extends ConvenienceRenderer {
                 first = false;
             });
         });
-        if (this._framework === Framework.Klaxon) {
+
+        const isTopLevel = this.topLevels.findEntry(top => top.equals(c)) !== undefined;
+        if (this._framework === Framework.Klaxon && isTopLevel) {
             this.emitBlock(")", () => {
                 this.emitLine("public fun toJson() = klaxon.toJsonString(this as Any)");
                 this.ensureBlankLine();
