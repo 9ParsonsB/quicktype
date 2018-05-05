@@ -1,5 +1,5 @@
 import { TargetLanguage } from "../TargetLanguage";
-import { Type, ClassType, EnumType, UnionType, TypeKind, ClassProperty } from "../Type";
+import { Type, ClassType, EnumType, UnionType, TypeKind, ClassProperty, ArrayType } from "../Type";
 import { TypeGraph } from "../TypeGraph";
 import { Name, Namer, funPrefixNamer } from "../Naming";
 import { Option, EnumOption } from "../RendererOptions";
@@ -319,8 +319,22 @@ class KotlinRenderer extends ConvenienceRenderer {
         }
     };
 
-    private renderTopLevelAlias = (t: Type, name: Name): void => {
-        this.emitLine("typealias ", name, " = ", this.kotlinType(t, true));
+    private renderTopLevelArray = (t: ArrayType, name: Name): void => {
+        const elementType = this.kotlinType(t.items);
+        this.emitBlock(
+            ["class ", name, "(elements: Collection<", elementType, ">) : ArrayList<", elementType, ">(elements)"],
+            () => {
+                this.emitLine("public fun toJson() = klaxon.toJsonString(this as Any)");
+                this.ensureBlankLine();
+                this.emitBlock("companion object", () => {
+                    this.emitLine(
+                        "public fun fromJson(json: String) = TopLevel(klaxon.parseArray<",
+                        elementType,
+                        ">(json)!!)"
+                    );
+                });
+            }
+        );
     };
 
     private klaxonRenameAttribute(propName: Name, jsonName: string, ignore: boolean = false): Sourcelike | undefined {
@@ -527,11 +541,12 @@ class KotlinRenderer extends ConvenienceRenderer {
             });
         }
 
-        this.forEachTopLevel(
-            "leading",
-            this.renderTopLevelAlias,
-            t => this.namedTypeToNameForTopLevel(t) === undefined
-        );
+        // Top-level arrays
+        this.forEachTopLevel("leading", (t, name) => {
+            if (t instanceof ArrayType) {
+                this.renderTopLevelArray(t, name);
+            }
+        });
 
         this.forEachNamedType(
             "leading-and-interposing",
