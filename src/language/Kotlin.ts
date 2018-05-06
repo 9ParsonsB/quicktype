@@ -352,7 +352,21 @@ class KotlinRenderer extends ConvenienceRenderer {
         return properties.length === 0 ? undefined : ["@Json(", intercalateArray(", ", properties), ")"];
     }
 
+    private emitEmptyClassDefinition(c: ClassType, className: Name): void {
+        this.emitDescription(this.descriptionForType(c));
+        if (this._framework === Framework.Klaxon) {
+            this.emitLine("typealias ", className, " = JsonObject");
+        } else {
+            // TODO what do we do when not using Klaxon?
+        }
+    }
+
     private renderClassDefinition = (c: ClassType, className: Name): void => {
+        if (c.getProperties().count() === 0) {
+            this.emitEmptyClassDefinition(c, className);
+            return;
+        }
+
         const kotlinType = (p: ClassProperty) => {
             if (p.isOptional) {
                 return [this.kotlinType(p.type, true, true), "?"];
@@ -428,6 +442,14 @@ class KotlinRenderer extends ConvenienceRenderer {
             this.emitLine(")");
         }
     };
+
+    private emitJsonObjectConverter(): void {
+        this.emitBlock(["private val convertJsonObject = object: Converter"], () => {
+            this.emitLine("override fun canConvert(cls: Class<*>) = cls == JsonObject::class.java");
+            this.emitLine("override fun toJson(value: Any): String = (value as JsonObject).toJsonString()");
+            this.emitLine("override fun fromJson(jv: JsonValue): Any = jv.inside");
+        });
+    }
 
     private renderEnumConverter = (e: EnumType, enumName: Name): void => {
         this.emitBlock(["val convert", enumName, " = object: Converter"], () => {
@@ -524,6 +546,9 @@ class KotlinRenderer extends ConvenienceRenderer {
         this.renderHeader();
 
         if (this._framework === Framework.Klaxon) {
+            // TODO only emit this when we need it
+            this.emitJsonObjectConverter();
+
             this.forEachEnum("leading-and-interposing", (enumType, name) => {
                 this.renderEnumConverter(enumType, name);
             });
@@ -535,6 +560,9 @@ class KotlinRenderer extends ConvenienceRenderer {
             this.indent(() => {
                 this.emitLine("Klaxon()");
                 this.indent(() => {
+                    // TODO only emit this when we need it
+                    this.emitLine(".converter(convertJsonObject)");
+
                     this.forEachEnum("none", (_, name) => {
                         this.emitLine(".converter(convert", name, ")");
                     });
