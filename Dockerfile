@@ -42,8 +42,8 @@ RUN apt-get install ruby --assume-yes
 RUN gem install bundler
 
 # Kotlin
-RUN apt install snapd --assume-yes
-RUN snap install --classic kotlin
+RUN curl -s https://get.sdkman.io | bash
+RUN /bin/bash -c "source /root/.sdkman/bin/sdkman-init.sh && sdk install kotlin"
 
 ENV PATH="${workdir}/node_modules/.bin:${PATH}"
 
