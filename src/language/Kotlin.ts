@@ -444,6 +444,7 @@ class KotlinRenderer extends ConvenienceRenderer {
     };
 
     private emitJsonObjectConverter(): void {
+        this.ensureBlankLine();
         this.emitBlock(["private val convertJsonObject = object: Converter"], () => {
             this.emitLine("override fun canConvert(cls: Class<*>) = cls == JsonObject::class.java");
             this.emitLine("override fun toJson(value: Any): String = (value as JsonObject).toJsonString()");
@@ -452,7 +453,7 @@ class KotlinRenderer extends ConvenienceRenderer {
     }
 
     private renderEnumConverter = (e: EnumType, enumName: Name): void => {
-        this.emitBlock(["val convert", enumName, " = object: Converter"], () => {
+        this.emitBlock(["private val convert", enumName, " = object: Converter"], () => {
             this.emitLine("override fun canConvert(cls: Class<*>) = cls == ", enumName, "::class.java");
             this.ensureBlankLine();
             this.emitBlock(["override fun toJson(value: Any): String = when (value)"], () => {
